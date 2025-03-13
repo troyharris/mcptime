@@ -20,17 +20,22 @@ def get_current_time(timezone: str = None) -> str:
     Returns:
         A string with the formatted current time.
     """
-    if timezone:
-        try:
-            tz = pytz.timezone(timezone)
-            current_time = datetime.now(tz)
-            return f"Current time in {timezone}: {current_time.strftime('%Y-%m-%d %H:%M:%S %Z')}"
-        except pytz.exceptions.UnknownTimeZoneError:
-            return f"Error: Unknown timezone '{timezone}'. Please provide a valid timezone name."
-    else:
-        # Return local time
-        current_time = datetime.now()
-        return f"Current local time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} (Computer's local timezone)"
+    try:
+        if timezone:
+            try:
+                tz = pytz.timezone(timezone)
+                current_time = datetime.now(tz)
+                return f"Current time in {timezone}: {current_time.strftime('%Y-%m-%d %H:%M:%S %Z')}"
+            except Exception as e:
+                # Return a valid string instead of raising an exception
+                return f"Unknown timezone '{timezone}'. Please provide a valid timezone name."
+        else:
+            # Return local time
+            current_time = datetime.now()
+            return f"Current local time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} (Computer's local timezone)"
+    except Exception as e:
+        # Catch all exceptions and return as string
+        return f"An error occurred: {str(e)}"
 
 
 @mcp.tool()
@@ -41,8 +46,11 @@ def get_unix_timestamp() -> str:
     Returns:
         A string with the current Unix timestamp.
     """
-    timestamp = int(time.time())
-    return f"Current Unix timestamp: {timestamp}"
+    try:
+        timestamp = int(time.time())
+        return f"Current Unix timestamp: {timestamp}"
+    except Exception as e:
+        return f"An error occurred: {str(e)}"
 
 
 @mcp.tool()
@@ -57,22 +65,25 @@ def list_timezones(region: str = None) -> str:
     Returns:
         A string with available timezones.
     """
-    all_timezones = pytz.all_timezones
+    try:
+        all_timezones = pytz.all_timezones
 
-    if region:
-        filtered_timezones = [
-            tz for tz in all_timezones if tz.startswith(region)]
-        if not filtered_timezones:
-            return f"No timezones found for region '{region}'"
-        return f"Timezones in {region}:\n" + "\n".join(filtered_timezones)
-    else:
-        common_timezones = [
-            "UTC", "America/New_York", "America/Los_Angeles", "Europe/London",
-            "Europe/Paris", "Asia/Tokyo", "Australia/Sydney", "Pacific/Auckland"
-        ]
-        return "Common timezones:\n" + "\n".join(common_timezones) + "\n\nUse with a region name for more options."
+        if region:
+            filtered_timezones = [
+                tz for tz in all_timezones if tz.startswith(region)]
+            if not filtered_timezones:
+                return f"No timezones found for region '{region}'"
+            return f"Timezones in {region}:\n" + "\n".join(filtered_timezones)
+        else:
+            common_timezones = [
+                "UTC", "America/New_York", "America/Los_Angeles", "Europe/London",
+                "Europe/Paris", "Asia/Tokyo", "Australia/Sydney", "Pacific/Auckland"
+            ]
+            return "Common timezones:\n" + "\n".join(common_timezones) + "\n\nUse with a region name for more options."
+    except Exception as e:
+        return f"An error occurred: {str(e)}"
 
 
 # Run the server when executed directly
 if __name__ == "__main__":
-    mcp.run()
+    mcp.run(transport='stdio')
